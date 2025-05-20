@@ -81,6 +81,9 @@ function main() {
 
     // Generate hourly task breakdown
     generateHourlyTasksTable($nas1Tasks, $nas2Tasks);
+
+    // Generate task schedule overview
+    generateTaskScheduleTable($nas1Tasks, $nas2Tasks);
     
     echo "\n" . BOLD . "Summary:\n" . RESET;
     if (empty($scheduleIssues)) {
@@ -274,6 +277,49 @@ function generateHourlyTasksTable(array $nas1Tasks, array $nas2Tasks): void {
         echo $label . "| " . str_pad($col1, $colWidth) . "| " . $col2 . "\n";
     }
 }
+
+
+// Generate a task schedule table for NAS1 and NAS2
+function generateTaskScheduleTable(array $nas1Tasks, array $nas2Tasks): void {
+    echo "\nTask Schedule Overview:\n";
+
+    $nameWidth = 30;
+    echo str_pad("Task", $nameWidth) . "| NAS1               | NAS2               | Status\n";
+    echo str_repeat("-", $nameWidth + 1 + 19 + 1 + 19 + 9) . "\n";
+
+    $allTaskNames = array_unique(array_merge(array_keys($nas1Tasks), array_keys($nas2Tasks)));
+    sort($allTaskNames, SORT_NATURAL | SORT_FLAG_CASE);
+
+    foreach ($allTaskNames as $taskName) {
+        $nas1 = isset($nas1Tasks[$taskName]) ? sprintf("%s (%s)", $nas1Tasks[$taskName]['formatted_time'], $nas1Tasks[$taskName]['schedule']['type']) : "-";
+        $nas2 = isset($nas2Tasks[$taskName]) ? sprintf("%s (%s)", $nas2Tasks[$taskName]['formatted_time'], $nas2Tasks[$taskName]['schedule']['type']) : "-";
+
+        if (!isset($nas1Tasks[$taskName]) || !isset($nas2Tasks[$taskName])) {
+            $statusSymbol = "✗";
+            $color = "\033[31m"; // red
+        } else {
+            $h1 = (int)substr($nas1Tasks[$taskName]['formatted_time'], 0, 2);
+            $m1 = (int)substr($nas1Tasks[$taskName]['formatted_time'], 3, 2);
+            $h2 = (int)substr($nas2Tasks[$taskName]['formatted_time'], 0, 2);
+            $m2 = (int)substr($nas2Tasks[$taskName]['formatted_time'], 3, 2);
+            $delta = abs(($h1 * 60 + $m1) - ($h2 * 60 + $m2));
+
+            if (abs($delta - 720) <= 5) {
+                $statusSymbol = "✓";
+                $color = "\033[32m"; // green
+            } else {
+                $statusSymbol = "⚠";
+                $color = "\033[33m"; // yellow
+            }
+        }
+
+        echo str_pad($taskName, $nameWidth)
+           . "| " . str_pad($nas1, 19)
+           . "| " . str_pad($nas2, 19)
+           . "|  {$color}{$statusSymbol}\033[0m\n";
+    }
+}
+
 
 
 // Run the main function
