@@ -63,7 +63,10 @@ function main() {
     // Get tasks from both NAS systems
     $nas1Tasks = getNasTasks($config['nas1']);
     $nas2Tasks = getNasTasks($config['nas2']);
-    
+
+    // print_r($nas1Tasks);
+    // print_r($nas2Tasks);
+
     if ($nas1Tasks === false || $nas2Tasks === false) {
         echo RED . "Could not retrieve tasks from one or both NAS devices. Exiting.\n" . RESET;
         exit(1);
@@ -75,6 +78,9 @@ function main() {
     
     // Generate timeline visualization
     generateTimeline($nas1Tasks, $nas2Tasks);
+
+    // Generate hourly task breakdown
+    generateHourlyTasksTable($nas1Tasks, $nas2Tasks);
     
     echo "\n" . BOLD . "Summary:\n" . RESET;
     if (empty($scheduleIssues)) {
@@ -197,54 +203,72 @@ function verifyTaskSchedules($nas1Tasks, $nas2Tasks) {
 /**
  * Generate a 24-hour timeline visualization of the tasks
  */
-function generateTimeline($nas1Tasks, $nas2Tasks) {
-    echo "\n" . BOLD . "24-Hour Backup Task Timeline:\n" . RESET;
-    
-    // Timeline header
-    echo "Hour: ";
-    for ($hour = 0; $hour < 24; $hour++) {
-        echo sprintf("%02d ", $hour);
+function generateTimeline(array $nas1Tasks, array $nas2Tasks): void {
+    echo "\n24-Hour Backup Task Timeline (Task Count Per Hour):\n";
+    echo "Hour :";
+    for ($i = 0; $i < 24; $i++) {
+        echo " " . str_pad($i, 2, "0", STR_PAD_LEFT);
     }
     echo "\n";
-    
-    // Timeline ruler
-    echo "      ";
-    for ($hour = 0; $hour < 24; $hour++) {
-        echo "-- ";
+
+    $countPerHour = function (array $tasks): array {
+        $counts = array_fill(0, 24, 0);
+        foreach ($tasks as $task) {
+            if (!is_array($task) || !isset($task['formatted_time'])) {
+                continue;
+            }
+            $hour = (int)substr($task['formatted_time'], 0, 2);
+            $counts[$hour]++;
+        }
+        return $counts;
+    };
+
+    $nas1Counts = $countPerHour($nas1Tasks);
+    $nas2Counts = $countPerHour($nas2Tasks);
+
+    echo "NAS1 :";
+    foreach ($nas1Counts as $count) {
+        echo "  " . $count;
+    }
+    echo "\nNAS2 :";
+    foreach ($nas2Counts as $count) {
+        echo "  " . $count;
     }
     echo "\n";
-    
-    // NAS1 Timeline
-    echo "NAS1: ";
-    $nas1Timeline = array_fill(0, 24, " ");
-    foreach ($nas1Tasks as $task) {
-        $hour = $task['schedule']['hour'];
-        if ($nas1Timeline[$hour] === " ") {
-            $nas1Timeline[$hour] = "N1";
-        } else {
-            $nas1Timeline[$hour] = "##";
-        }
-    }
-    echo implode(" ", $nas1Timeline) . "\n";
-    
-    // NAS2 Timeline
-    echo "NAS2: ";
-    $nas2Timeline = array_fill(0, 24, " ");
-    foreach ($nas2Tasks as $task) {
-        $hour = $task['schedule']['hour'];
-        if ($nas2Timeline[$hour] === " ") {
-            $nas2Timeline[$hour] = "N2";
-        } else {
-            $nas2Timeline[$hour] = "##";
-        }
-    }
-    echo implode(" ", $nas2Timeline) . "\n";
-    
-    // Legend
-    echo "\nLegend:\n";
-    echo "  N1/N2 - Task running on NAS1/NAS2\n";
-    echo "  ## - Multiple tasks at the same hour\n";
 }
+
+
+/**
+ * Generate a table of tasks scheduled by hour
+ */
+function generateHourlyTasksTable(array $nas1Tasks, array $nas2Tasks): void {
+    echo "\nHourly Task Breakdown:\n";
+    echo str_pad("Hour", 6) . "| " . str_pad("NAS1 Tasks", 30) . "| NAS2 Tasks\n";
+    echo str_repeat("-", 70) . "\n";
+
+    $byHour = function (array $tasks): array {
+        $hourMap = [];
+        foreach ($tasks as $name => $task) {
+            if (!is_array($task) || !isset($task['formatted_time'])) {
+                continue;
+            }
+            $hour = (int)substr($task['formatted_time'], 0, 2);
+            $hourMap[$hour][] = $name;
+        }
+        return $hourMap;
+    };
+
+    $nas1ByHour = $byHour($nas1Tasks);
+    $nas2ByHour = $byHour($nas2Tasks);
+
+    for ($h = 0; $h < 24; $h++) {
+        $label = str_pad(sprintf("%02d", $h), 6);
+        $col1 = isset($nas1ByHour[$h]) ? implode(", ", $nas1ByHour[$h]) : "";
+        $col2 = isset($nas2ByHour[$h]) ? implode(", ", $nas2ByHour[$h]) : "";
+        echo $label . "| " . str_pad($col1, 30) . "| " . $col2 . "\n";
+    }
+}
+
 
 // Run the main function
 main();
