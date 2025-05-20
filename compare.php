@@ -85,12 +85,13 @@ function main() {
     // Generate task schedule overview
     generateTaskScheduleTable($nas1Tasks, $nas2Tasks);
     
-    echo "\n" . BOLD . "Summary:\n" . RESET;
-    if (empty($scheduleIssues)) {
-        echo GREEN . "✓ All tasks are properly scheduled 12 hours apart\n" . RESET;
-    } else {
-        echo YELLOW . "⚠ Found " . count($scheduleIssues) . " tasks with scheduling issues\n" . RESET;
-    }
+    [$ok, $mismatch, $missing] = generateTaskScheduleTable($nas1Tasks, $nas2Tasks);
+
+    echo "\nSummary:\n";
+    echo GREEN . "✓ {$ok} tasks properly scheduled (12h offset)\n" . RESET;
+    echo YELLOW . "⚠ {$mismatch} tasks with incorrect time offset\n" . RESET;
+    echo RED . "✗ {$missing} tasks missing on one NAS\n" . RESET;
+
 }
 
 /**
@@ -280,12 +281,14 @@ function generateHourlyTasksTable(array $nas1Tasks, array $nas2Tasks): void {
 
 
 // Generate a task schedule table for NAS1 and NAS2
-function generateTaskScheduleTable(array $nas1Tasks, array $nas2Tasks): void {
+function generateTaskScheduleTable(array $nas1Tasks, array $nas2Tasks): array {
     echo "\nTask Schedule Overview:\n";
 
     $nameWidth = 30;
     echo str_pad("Task", $nameWidth) . "| NAS1               | NAS2               | Status\n";
     echo str_repeat("-", $nameWidth + 1 + 19 + 1 + 19 + 9) . "\n";
+
+    $ok = $mismatch = $missing = 0;
 
     $allTaskNames = array_unique(array_merge(array_keys($nas1Tasks), array_keys($nas2Tasks)));
     sort($allTaskNames, SORT_NATURAL | SORT_FLAG_CASE);
@@ -297,6 +300,7 @@ function generateTaskScheduleTable(array $nas1Tasks, array $nas2Tasks): void {
         if (!isset($nas1Tasks[$taskName]) || !isset($nas2Tasks[$taskName])) {
             $statusSymbol = "✗";
             $color = "\033[31m"; // red
+            $missing++;
         } else {
             $h1 = (int)substr($nas1Tasks[$taskName]['formatted_time'], 0, 2);
             $m1 = (int)substr($nas1Tasks[$taskName]['formatted_time'], 3, 2);
@@ -306,10 +310,12 @@ function generateTaskScheduleTable(array $nas1Tasks, array $nas2Tasks): void {
 
             if (abs($delta - 720) <= 5) {
                 $statusSymbol = "✓";
-                $color = "\033[32m"; // green
+                $color = "\033[32m";
+                $ok++;
             } else {
                 $statusSymbol = "⚠";
-                $color = "\033[33m"; // yellow
+                $color = "\033[33m";
+                $mismatch++;
             }
         }
 
@@ -318,8 +324,13 @@ function generateTaskScheduleTable(array $nas1Tasks, array $nas2Tasks): void {
            . "| " . str_pad($nas2, 19)
            . "|  {$color}{$statusSymbol}\033[0m\n";
     }
-}
 
+    // echo "\n> ". GREEN . "✓ OK (12h offset)    " . RESET;
+    // echo YELLOW . "⚠ mismatch offset    " . RESET;
+    // echo RED . "✗ task missing\n" . RESET;
+
+    return [$ok, $mismatch, $missing];
+}
 
 
 // Run the main function
