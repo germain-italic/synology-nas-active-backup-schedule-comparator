@@ -28,7 +28,7 @@ This tool compares Active Backup for Business (ABB) tasks between two Synology N
 - You can run the script on the NAS or on your own computer
 
 ```
-php nas_backup_compare.php
+php src/compare.php
 ```
 
 ## Configuration
@@ -42,7 +42,6 @@ Before running the script, update the .env configuration file with your NAS info
 ## Output Example
 
 ```
-$ php compare.php 
 NAS Backup Task Comparison Tool
 -----------------------------
 

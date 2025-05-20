@@ -5,16 +5,18 @@
  * This script compares Active Backup for Business tasks between two Synology NAS devices,
  * verifies proper scheduling (12 hours apart), and generates a timeline visualization.
  * 
- * Usage: php nas_backup_compare.php
+ * Usage: php compare.php (php src/compare.php from the root of the project)
  */
 
 // Load environment variables from .env file
 function loadEnv() {
-    if (!file_exists('.env')) {
-        die("Error: .env file not found\n");
-    }
+    $envPath = __DIR__ . '/../.env';
     
-    $lines = file('.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if (!file_exists($envPath)) {
+        die("Error: .env file not found at $envPath\n");
+    }
+
+    $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
         if (strpos($line, '#') === 0) continue;
         list($name, $value) = explode('=', $line, 2);
