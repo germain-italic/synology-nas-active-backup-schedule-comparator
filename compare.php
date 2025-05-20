@@ -292,8 +292,8 @@ function generateTaskScheduleTable(array $nas1Tasks, array $nas2Tasks): array {
     sort($allTaskNames, SORT_NATURAL | SORT_FLAG_CASE);
 
     foreach ($allTaskNames as $taskName) {
-        $nas1 = isset($nas1Tasks[$taskName]) ? sprintf("%s (%s)", $nas1Tasks[$taskName]['formatted_time'], $nas1Tasks[$taskName]['schedule']['type']) : "-";
-        $nas2 = isset($nas2Tasks[$taskName]) ? sprintf("%s (%s)", $nas2Tasks[$taskName]['formatted_time'], $nas2Tasks[$taskName]['schedule']['type']) : "-";
+$nas1 = isset($nas1Tasks[$taskName]) ? sprintf("%s (%s)", $nas1Tasks[$taskName]['formatted_time'], ($nas1Tasks[$taskName]['schedule']['type'] === 'Weekly' && count($nas1Tasks[$taskName]['schedule']['weekdays'] ?? []) === 7 ? 'Daily' : $nas1Tasks[$taskName]['schedule']['type'])) : "-";
+$nas2 = isset($nas2Tasks[$taskName]) ? sprintf("%s (%s)", $nas2Tasks[$taskName]['formatted_time'], ($nas2Tasks[$taskName]['schedule']['type'] === 'Weekly' && count($nas2Tasks[$taskName]['schedule']['weekdays'] ?? []) === 7 ? 'Daily' : $nas2Tasks[$taskName]['schedule']['type'])) : "-";
 
         if (!isset($nas1Tasks[$taskName]) || !isset($nas2Tasks[$taskName])) {
             $statusSymbol = "✗";
