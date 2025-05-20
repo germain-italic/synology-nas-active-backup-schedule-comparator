@@ -82,3 +82,9 @@ This tool operates in read-only mode and does not make any changes to your NAS c
 - If you encounter connection issues, verify SSH connectivity to both NAS devices
 - Ensure the provided SSH key has proper permissions (chmod 600)
 - Verify the database path is correct for your Synology DSM version
+
+## Inspirations
+
+- https://github.com/righter83/checkmk-synology-activebackup/tree/main
+- https://github.com/Glonki/Zabbix-SynologyABB
+- https://github.com/WAdama/nas_ab_status
