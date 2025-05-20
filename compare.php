@@ -243,8 +243,10 @@ function generateTimeline(array $nas1Tasks, array $nas2Tasks): void {
  */
 function generateHourlyTasksTable(array $nas1Tasks, array $nas2Tasks): void {
     echo "\nHourly Task Breakdown:\n";
-    echo str_pad("Hour", 6) . "| " . str_pad("NAS1 Tasks", 30) . "| NAS2 Tasks\n";
-    echo str_repeat("-", 70) . "\n";
+
+    $colWidth = 50;
+    echo str_pad("Hour", 6) . "| " . str_pad("NAS1 Tasks", $colWidth) . "| NAS2 Tasks\n";
+    echo str_repeat("-", 6 + 2 + $colWidth + 2 + 40) . "\n";
 
     $byHour = function (array $tasks): array {
         $hourMap = [];
@@ -263,9 +265,13 @@ function generateHourlyTasksTable(array $nas1Tasks, array $nas2Tasks): void {
 
     for ($h = 0; $h < 24; $h++) {
         $label = str_pad(sprintf("%02d", $h), 6);
+
         $col1 = isset($nas1ByHour[$h]) ? implode(", ", $nas1ByHour[$h]) : "";
         $col2 = isset($nas2ByHour[$h]) ? implode(", ", $nas2ByHour[$h]) : "";
-        echo $label . "| " . str_pad($col1, 30) . "| " . $col2 . "\n";
+
+        // Tronque le contenu si trop long
+        $col1 = mb_strimwidth($col1, 0, $colWidth - 3, '...');
+        echo $label . "| " . str_pad($col1, $colWidth) . "| " . $col2 . "\n";
     }
 }
 
