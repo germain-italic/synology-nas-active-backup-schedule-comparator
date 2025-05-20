@@ -64,8 +64,15 @@ function main() {
     $nas1Tasks = getNasTasks($config['nas1']);
     $nas2Tasks = getNasTasks($config['nas2']);
 
+    // echo "-- OUTPUT OF NAS 1 --\n";
+    // echo "---------------------\n";
     // print_r($nas1Tasks);
+
+    // echo "\n-- OUTPUT OF NAS 2 --\n";
+    // echo "---------------------\n";
     // print_r($nas2Tasks);
+
+    // exit();
 
     if ($nas1Tasks === false || $nas2Tasks === false) {
         echo RED . "Could not retrieve tasks from one or both NAS devices. Exiting.\n" . RESET;
