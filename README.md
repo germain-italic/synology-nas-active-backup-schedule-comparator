@@ -1,4 +1,4 @@
-# NAS Backup Task Comparison Tool
+# Active Backup tasks comparison tool for Synology NAS
 
 This tool compares Active Backup for Business (ABB) tasks between two Synology NAS devices. It verifies that tasks on NAS1 also exist on NAS2, checks if they are scheduled 12 hours apart, and provides a 24-hour timeline visualization of all backup tasks.
 
