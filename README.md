@@ -122,3 +122,12 @@ This tool operates in read-only mode and does not make any changes to your NAS c
 - https://github.com/righter83/checkmk-synology-activebackup/tree/main
 - https://github.com/Glonki/Zabbix-SynologyABB
 - https://github.com/WAdama/nas_ab_status
+
+## Testing
+
+```
+composer install
+./vendor/bin/phpunit
+```
+
+![](screenshots/tests.png)
