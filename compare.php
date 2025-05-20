@@ -83,8 +83,6 @@ function main() {
     generateHourlyTasksTable($nas1Tasks, $nas2Tasks);
 
     // Generate task schedule overview
-    generateTaskScheduleTable($nas1Tasks, $nas2Tasks);
-    
     [$ok, $mismatch, $missing] = generateTaskScheduleTable($nas1Tasks, $nas2Tasks);
 
     echo "\nSummary:\n";
